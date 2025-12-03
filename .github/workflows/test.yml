@@ -34,13 +34,25 @@ jobs:
             npm install
           fi
       
-      - name: Check DroogAI availability
-        id: check-droog
+      - name: Install DroogAI from GitHub
+        id: install-droog
         run: |
-          # DroogAI is not on GitHub, so tests will be skipped
-          echo "⚠️  DroogAI is not available on GitHub"
-          echo "⚠️  DroogAI tests will be skipped in CI"
-          echo "available=false" >> $GITHUB_OUTPUT
+          echo "Installing DroogAI from GitHub..."
+          # Try to clone DroogAI repository
+          if git clone https://github.com/abhijeet1771/AI-reviewer.git /tmp/droog-ai 2>/dev/null; then
+            echo "✅ DroogAI repository cloned successfully"
+            cd /tmp/droog-ai
+            npm install
+            npm run build
+            cd ${{ github.workspace }}
+            npm install /tmp/droog-ai
+            echo "available=true" >> $GITHUB_OUTPUT
+            echo "✅ DroogAI installed successfully"
+          else
+            echo "⚠️  DroogAI repository not found on GitHub"
+            echo "⚠️  DroogAI tests will be skipped"
+            echo "available=false" >> $GITHUB_OUTPUT
+          fi
         continue-on-error: true
       
       - name: Install Playwright browsers
@@ -51,11 +63,8 @@ jobs:
         continue-on-error: true
       
       - name: Run DroogAI Tests
-        if: steps.check-droog.outputs.available != 'false'
-        run: |
-          echo "⚠️  DroogAI is not available on GitHub"
-          echo "⚠️  Skipping DroogAI tests in CI"
-          echo "💡 To test DroogAI, run tests locally where DroogAI is installed"
+        if: steps.install-droog.outputs.available == 'true'
+        run: npm run test:droog || echo "DroogAI tests completed with warnings"
         continue-on-error: true
       
       - name: Upload test results

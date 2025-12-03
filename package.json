@@ -4,7 +4,9 @@
   "description": "Demo project to test DroogAI features",
   "main": "index.js",
   "scripts": {
-    "test": "echo 'Tests will be added in a branch'"
+    "test": "playwright test",
+    "test:box": "playwright test tests/box-login.spec.js",
+    "test:droog": "node tests/test-droogai.js"
   },
   "keywords": ["playwright", "droogai", "testing"],
   "author": "",

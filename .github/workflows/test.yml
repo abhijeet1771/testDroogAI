@@ -1,9 +1,10 @@
 name: Run Tests
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-  workflow_dispatch:
+  # PR trigger disabled for manual verification
+  # pull_request:
+  #   types: [opened, synchronize, reopened]
+  workflow_dispatch: # Manual trigger only
 
 jobs:
   test:

@@ -22,9 +22,9 @@ jobs:
       
       - name: Install dependencies
         run: |
-          # Remove local file dependency that won't work in CI
+          # Remove local file dependency temporarily for npm install
           if grep -q '"droog-ai": "file:' package.json; then
-            echo "Removing local droog-ai dependency for CI..."
+            echo "Temporarily removing local droog-ai dependency for npm install..."
             npm pkg delete devDependencies.droog-ai || true
           fi
           # Try npm ci first, fallback to npm install if lock file is out of sync
@@ -33,6 +33,17 @@ jobs:
           else
             npm install
           fi
+      
+      - name: Install DroogAI
+        run: |
+          echo "Installing DroogAI from GitHub..."
+          # Clone DroogAI repository
+          git clone https://github.com/abhijeet1771/AI-reviewer.git /tmp/droog-ai || echo "DroogAI repo clone failed"
+          cd /tmp/droog-ai && npm install && npm run build || echo "DroogAI build failed"
+          # Link DroogAI as local dependency
+          cd ${{ github.workspace }}
+          npm install /tmp/droog-ai || echo "DroogAI install failed"
+        continue-on-error: true
       
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

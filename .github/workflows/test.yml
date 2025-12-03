@@ -22,6 +22,12 @@ jobs:
       
       - name: Install dependencies
         run: |
+          # Remove local file dependency that won't work in CI
+          if grep -q '"droog-ai": "file:' package.json; then
+            echo "Removing local droog-ai dependency for CI..."
+            npm pkg delete devDependencies.droog-ai || true
+          fi
+          # Try npm ci first, fallback to npm install if lock file is out of sync
           if [ -f "package-lock.json" ]; then
             npm ci || npm install
           else

@@ -1,10 +1,14 @@
 name: Run Tests
 
+# Workflow disabled for now - using local testing
+# Uncomment below to enable:
+# on:
+#   pull_request:
+#     types: [opened, synchronize, reopened]
+#   workflow_dispatch:
 on:
-  # PR trigger disabled for manual verification
-  # pull_request:
-  #   types: [opened, synchronize, reopened]
-  workflow_dispatch: # Manual trigger only
+  workflow_dispatch:
+    # Disabled - use local testing instead
 
 jobs:
   test:

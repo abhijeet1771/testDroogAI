@@ -42,17 +42,43 @@ jobs:
       - name: Install DroogAI from GitHub
         id: install-droog
         run: |
-          echo "Installing DroogAI from GitHub..."
-          # Try to clone DroogAI repository
-          if git clone https://github.com/abhijeet1771/AI-reviewer.git /tmp/droog-ai 2>/dev/null; then
+          echo "📦 Installing DroogAI from GitHub..."
+          
+          # Clone DroogAI repository
+          if git clone https://github.com/abhijeet1771/DROOGAI.git /tmp/droog-ai 2>/dev/null; then
             echo "✅ DroogAI repository cloned successfully"
             cd /tmp/droog-ai
-            npm install
+            
+            # Verify package.json exists
+            if [ ! -f "package.json" ]; then
+              echo "❌ package.json not found in cloned repository"
+              echo "Current directory: $(pwd)"
+              echo "Files in root:"
+              ls -la
+              echo "available=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+            
+            echo "✅ package.json found"
+            
+            # Install dependencies
+            if [ -f "package-lock.json" ]; then
+              npm ci
+            else
+              npm install
+            fi
+            
+            # Build DroogAI
             npm run build
-            cd ${{ github.workspace }}
-            npm install /tmp/droog-ai
-            echo "available=true" >> $GITHUB_OUTPUT
-            echo "✅ DroogAI installed successfully"
+            
+            # Verify build succeeded
+            if [ -f "dist/index.js" ]; then
+              echo "available=true" >> $GITHUB_OUTPUT
+              echo "✅ DroogAI installed and built successfully"
+            else
+              echo "❌ DroogAI build failed - dist/index.js not found"
+              echo "available=false" >> $GITHUB_OUTPUT
+            fi
           else
             echo "⚠️  DroogAI repository not found on GitHub"
             echo "⚠️  DroogAI tests will be skipped"

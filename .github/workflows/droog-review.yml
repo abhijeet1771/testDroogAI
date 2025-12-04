@@ -1,0 +1,104 @@
+name: Droog AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review'
+        required: true
+        type: string
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+        continue-on-error: true
+      
+      - name: Install DroogAI
+        run: |
+          echo "📦 Installing DroogAI..."
+          # Clone DroogAI repository
+          git clone https://github.com/abhijeet1771/AI-reviewer.git /tmp/droog-ai || {
+            echo "⚠️  DroogAI repository not found on GitHub"
+            echo "⚠️  Please ensure DroogAI is pushed to GitHub"
+            exit 1
+          }
+          
+          cd /tmp/droog-ai
+          npm install
+          npm run build
+          
+          echo "✅ DroogAI installed and built"
+        continue-on-error: false
+      
+      - name: Check if index exists
+        id: check-index
+        run: |
+          if [ -f "/tmp/droog-ai/.droog-embeddings.json" ]; then
+            echo "index_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Index file found"
+          else
+            echo "index_exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️  Index file not found - will index main branch"
+          fi
+        continue-on-error: true
+      
+      - name: Index main branch (if needed)
+        if: steps.check-index.outputs.index_exists != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo "📦 Indexing main branch (first time setup)..."
+          cd /tmp/droog-ai
+          node dist/index.js index --repo ${{ github.repository }} --branch main || {
+            echo "⚠️  Indexing failed, but continuing with review"
+          }
+        continue-on-error: true
+      
+      - name: Run Droog AI Review
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PR_NUMBER="${{ github.event.inputs.pr_number }}"
+          fi
+          
+          echo "🚀 Reviewing PR #${PR_NUMBER}..."
+          cd /tmp/droog-ai
+          
+          # Run review with enterprise features and auto-post comments
+          node dist/index.js review --repo "${{ github.repository }}" --pr "${PR_NUMBER}" --enterprise --post || {
+            echo "⚠️  Review completed with warnings"
+            exit 0  # Don't fail workflow on review errors
+          }
+        continue-on-error: true
+      
+      - name: Upload review report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-report
+          path: /tmp/droog-ai/report.json
+          retention-days: 7
+        continue-on-error: true
+

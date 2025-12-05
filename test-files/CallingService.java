@@ -1,37 +1,32 @@
-package com.example.service;
+package com.example;
 
 /**
- * Service that calls BreakingChangesService - WILL BREAK
- * This file will fail because it calls methods with changed signatures
+ * This file contains call sites that WILL BREAK due to changes in TestSprint1Negative.java
+ * Tests the impact analysis and call site detection
  */
+
 public class CallingService {
     
-    private BreakingChangesService breakingService = new BreakingChangesService();
-    
-    // WILL BREAK: Calls processData with old signature (missing format parameter)
-    public void processUserData(String data) {
-        breakingService.processData(data); // BREAKING: Missing second parameter
+    public void processOrderFlow() {
+        TestSprint1Negative service = new TestSprint1Negative();
+        
+        // CALL SITE 1: Will break - signature changed (missing quantity parameter)
+        service.processOrder("ORD-123");
+        
+        // CALL SITE 2: Will break - method is now private
+        String userData = service.getUserData("USER-456");
+        
+        // CALL SITE 3: Will break - return type changed from int to String
+        int status = service.getStatus(); // Compilation error!
+        
+        // CALL SITE 4: Will break - signature changed (missing discountPercent)
+        int discount = service.calculateDiscount(100);
     }
     
-    // WILL BREAK: Calls getUserInfo which is now private
-    public String fetchUser(String userId) {
-        return breakingService.getUserInfo(userId); // BREAKING: Method is now private
-    }
-    
-    // WILL BREAK: Expects String return type but now returns int
-    public void checkStatus() {
-        String status = breakingService.getStatus(); // BREAKING: Return type changed to int
-        System.out.println(status);
-    }
-    
-    // WILL BREAK: Calls updateUser with Long but now expects String
-    public void updateUserAccount(Long userId) {
-        breakingService.updateUser(userId); // BREAKING: Parameter type changed
-    }
-    
-    // WILL BREAK: Calls removed method
-    public void doSomething() {
-        // breakingService.oldMethod(); // BREAKING: Method was removed
+    public void orderProcessing() {
+        TestSprint1Negative service = new TestSprint1Negative();
+        
+        // Another call site that will break
+        service.processOrder("ORD-789");
     }
 }
-

@@ -6,7 +6,10 @@
   "scripts": {
     "test": "playwright test",
     "test:box": "playwright test tests/box-login.spec.js",
-    "test:droog": "node tests/test-droogai.js"
+    "test:droog": "node tests/test-droogai.js",
+    "test:comprehensive": "playwright test tests/specs/droogai-comprehensive.spec.js",
+    "test:branch": "playwright test tests/specs/droogai-branch-comparison.spec.js",
+    "test:all": "playwright test tests/specs/"
   },
   "keywords": ["playwright", "droogai", "testing"],
   "author": "",

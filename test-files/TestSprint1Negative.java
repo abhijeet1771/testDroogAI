@@ -1,5 +1,7 @@
 package com.example;
 
+import java.util.List;
+
 /**
  * NEGATIVE SCENARIOS for Sprint 1 Testing
  * This file contains intentional issues to test:
@@ -8,7 +10,35 @@ package com.example;
  * 3. Conversational tone
  */
 
+// Dummy classes for compilation
+class Order {
+    private String id;
+    private int quantity;
+    private String userId;
+    
+    public String getId() { return id; }
+    public int getQuantity() { return quantity; }
+    public String getUserId() { return userId; }
+}
+
+class User {
+    private String id;
+    public String getId() { return id; }
+}
+
+class UserService {
+    public User getUserById(String userId) { return new User(); }
+}
+
+class Item {
+    private double price;
+    private int quantity;
+    public double getPrice() { return price; }
+    public int getQuantity() { return quantity; }
+}
+
 public class TestSprint1Negative {
+    private UserService userService = new UserService();
     
     // BREAKING CHANGE: Method signature changed (will break call sites)
     public void processOrder(String orderId, int quantity) {

@@ -10,7 +10,32 @@ import java.util.stream.Collectors;
  * Tests that the system doesn't generate false positives
  */
 
+// Dummy classes for compilation
+class Order {
+    private String id;
+    private String userId;
+    public String getId() { return id; }
+    public String getUserId() { return userId; }
+}
+
+class User {
+    private String id;
+    public String getId() { return id; }
+}
+
+class UserService {
+    public List<User> getUsersByIds(List<String> userIds) { return List.of(); }
+}
+
+class Item {
+    private double price;
+    private int quantity;
+    public double getPrice() { return price; }
+    public int getQuantity() { return quantity; }
+}
+
 public class TestSprint1Positive {
+    private UserService userService = new UserService();
     
     /**
      * Clean method with proper signature

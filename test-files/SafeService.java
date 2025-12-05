@@ -1,47 +1,43 @@
-package test.files;
+package com.example.service;
 
 /**
- * SafeService - POSITIVE SCENARIO
- * This service demonstrates safe, non-breaking changes
- * All changes here are backward compatible
+ * Service with safe changes - no breaking changes, no performance regressions
+ * This should NOT trigger any "will break" warnings
  */
 public class SafeService {
     
-    /**
-     * POSITIVE: Method signature unchanged (safe)
-     * This method is called from master but we're not changing it
-     */
-    public String getData(String id) {
-        return "Data for: " + id;
+    // SAFE: New method added (not breaking)
+    public void newMethod(String data) {
+        // New functionality - safe addition
     }
     
-    /**
-     * POSITIVE: New method added (safe, non-breaking)
-     * Adding new methods doesn't break existing code
-     */
-    public String getDataWithDetails(String id, boolean includeMetadata) {
-        String data = getData(id);
-        if (includeMetadata) {
-            return data + " [with metadata]";
+    // SAFE: Method with same signature (unchanged)
+    public void existingMethod(String param) {
+        // Unchanged method - safe
+    }
+    
+    // SAFE: Private method changed (not breaking for external callers)
+    private void internalMethod(String data) {
+        // Internal change - safe
+    }
+    
+    // SAFE: Performance improvement - using StringBuilder
+    public String buildMessage(List<String> items) {
+        StringBuilder message = new StringBuilder();
+        for (String item : items) {
+            message.append(item).append(", "); // GOOD: StringBuilder instead of concatenation
         }
-        return data;
+        return message.toString();
     }
     
-    /**
-     * POSITIVE: Method improved but signature same (safe)
-     * Internal implementation changed but API unchanged
-     */
-    public int calculateTotal(int a, int b) {
-        // Implementation improved but signature same
-        // This is safe - no breaking changes
-        return a + b;
+    // SAFE: Batch query instead of N+1
+    public List<String> getOrdersWithUsers(List<Long> orderIds) {
+        // GOOD: Single batch query
+        return getUsersByIds(orderIds); // Batch query
     }
     
-    /**
-     * POSITIVE: New helper method (safe)
-     */
-    private String formatData(String data) {
-        return "[" + data + "]";
+    private List<String> getUsersByIds(List<Long> ids) {
+        // Simulated batch query
+        return new ArrayList<>();
     }
 }
-

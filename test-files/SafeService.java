@@ -1,5 +1,8 @@
 package com.example.service;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * Service with safe changes - no breaking changes, no performance regressions
  * This should NOT trigger any "will break" warnings

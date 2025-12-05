@@ -50,3 +50,4 @@ class BoxLoginPage {
 
 module.exports = { BoxLoginPage };
 
+

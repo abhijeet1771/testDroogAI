@@ -56,3 +56,5 @@ npx tsx src/index.ts index --repo abhijeet1771/testDroogAI --branch main
 - GitHub token required hai
 - Gemini API key optional hai (embeddings ke liye)
 
+
+

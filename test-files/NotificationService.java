@@ -1,8 +1,8 @@
 package test.files;
 
 /**
- * NotificationService - This will be called from master branch
- * This file exists in master and will be impacted by PR changes
+ * NotificationService - This exists in master branch
+ * This file calls UserService methods and will be impacted by PR changes
  */
 public class NotificationService {
     
@@ -34,4 +34,3 @@ public class NotificationService {
         System.out.println("Sending email to: " + user + " - Subject: " + subject);
     }
 }
-

@@ -1,8 +1,8 @@
 package test.files;
 
 /**
- * OrderService - This will be called from master branch
- * This file exists in master and will be impacted by PR changes
+ * OrderService - This exists in main branch
+ * This file calls UserService methods and will be impacted by PR changes
  */
 public class OrderService {
     
@@ -49,4 +49,3 @@ public class OrderService {
         }
     }
 }
-

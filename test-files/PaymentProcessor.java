@@ -1,8 +1,8 @@
 package test.files;
 
 /**
- * PaymentProcessor - This will be called from master branch
- * This file exists in master and will be impacted by PR changes
+ * PaymentProcessor - This exists in main branch
+ * This file calls UserService methods and will be impacted by PR changes
  */
 public class PaymentProcessor {
     
@@ -47,4 +47,3 @@ public class PaymentProcessor {
         return userService.validateUser(userId);
     }
 }
-

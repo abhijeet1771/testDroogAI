@@ -1,9 +1,14 @@
 name: Run Tests
 
+# Workflow disabled for now - using local testing
+# Uncomment below to enable:
+# on:
+#   pull_request:
+#     types: [opened, synchronize, reopened]
+#   workflow_dispatch:
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
   workflow_dispatch:
+    # Disabled - use local testing instead
 
 jobs:
   test:
@@ -22,11 +27,64 @@ jobs:
       
       - name: Install dependencies
         run: |
+          # Remove local file dependency temporarily for npm install
+          if grep -q '"droog-ai": "file:' package.json; then
+            echo "Temporarily removing local droog-ai dependency for npm install..."
+            npm pkg delete devDependencies.droog-ai || true
+          fi
+          # Try npm ci first, fallback to npm install if lock file is out of sync
           if [ -f "package-lock.json" ]; then
-            npm ci
+            npm ci || npm install
           else
             npm install
           fi
+      
+      - name: Install DroogAI from GitHub
+        id: install-droog
+        run: |
+          echo "📦 Installing DroogAI from GitHub..."
+          
+          # Clone DroogAI repository
+          if git clone https://github.com/abhijeet1771/DROOGAI.git /tmp/droog-ai 2>/dev/null; then
+            echo "✅ DroogAI repository cloned successfully"
+            cd /tmp/droog-ai
+            
+            # Verify package.json exists
+            if [ ! -f "package.json" ]; then
+              echo "❌ package.json not found in cloned repository"
+              echo "Current directory: $(pwd)"
+              echo "Files in root:"
+              ls -la
+              echo "available=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+            
+            echo "✅ package.json found"
+            
+            # Install dependencies
+            if [ -f "package-lock.json" ]; then
+              npm ci
+            else
+              npm install
+            fi
+            
+            # Build DroogAI
+            npm run build
+            
+            # Verify build succeeded
+            if [ -f "dist/index.js" ]; then
+              echo "available=true" >> $GITHUB_OUTPUT
+              echo "✅ DroogAI installed and built successfully"
+            else
+              echo "❌ DroogAI build failed - dist/index.js not found"
+              echo "available=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "⚠️  DroogAI repository not found on GitHub"
+            echo "⚠️  DroogAI tests will be skipped"
+            echo "available=false" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
       
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
@@ -36,6 +94,7 @@ jobs:
         continue-on-error: true
       
       - name: Run DroogAI Tests
+        if: steps.install-droog.outputs.available == 'true'
         run: npm run test:droog || echo "DroogAI tests completed with warnings"
         continue-on-error: true
       

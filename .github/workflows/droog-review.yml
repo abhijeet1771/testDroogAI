@@ -12,139 +12,17 @@ on:
 
 jobs:
   review:
-    runs-on: ubuntu-latest
+    uses: abhijeet1771/DROOGAI/.github/workflows/droog-review-reusable.yml@b7a83e5
     permissions:
       contents: read
       pull-requests: write
       issues: write
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-        continue-on-error: true
-      
-      - name: Install DroogAI
-        run: |
-          echo "📦 Installing DroogAI..."
-          
-          # Try to clone DroogAI repository
-          if git clone https://github.com/abhijeet1771/AI-reviewer.git /tmp/droog-ai 2>&1; then
-            echo "✅ DroogAI repository cloned successfully"
-            cd /tmp/droog-ai
-            
-            # Check if package.json exists
-            if [ ! -f "package.json" ]; then
-              echo "⚠️  package.json not found in DroogAI repository"
-              echo "⚠️  Trying alternative installation method..."
-              exit 1
-            fi
-            
-            echo "📦 Installing DroogAI dependencies..."
-            npm install
-            
-            echo "🔨 Building DroogAI..."
-            npm run build
-            
-            if [ ! -f "dist/index.js" ]; then
-              echo "⚠️  Build failed - dist/index.js not found"
-              exit 1
-            fi
-            
-            echo "✅ DroogAI installed and built successfully"
-            echo "droog_path=/tmp/droog-ai" >> $GITHUB_ENV
-          else
-            echo "❌ Failed to clone DroogAI repository"
-            echo "💡 Alternative: Install DroogAI from npm (if published) or use local build"
-            echo "⚠️  Workflow will continue but review may fail"
-            echo "droog_path=" >> $GITHUB_ENV
-            exit 1
-          fi
-        continue-on-error: true
-      
-      - name: Check if DroogAI installed
-        id: check-droog
-        run: |
-          if [ -n "${{ env.droog_path }}" ] && [ -f "${{ env.droog_path }}/dist/index.js" ]; then
-            echo "installed=true" >> $GITHUB_OUTPUT
-            echo "✅ DroogAI is ready"
-          else
-            echo "installed=false" >> $GITHUB_OUTPUT
-            echo "❌ DroogAI installation failed"
-          fi
-        continue-on-error: true
-      
-      - name: Check if index exists
-        if: steps.check-droog.outputs.installed == 'true'
-        id: check-index
-        run: |
-          if [ -f "${{ env.droog_path }}/.droog-embeddings.json" ]; then
-            echo "index_exists=true" >> $GITHUB_OUTPUT
-            echo "✅ Index file found"
-          else
-            echo "index_exists=false" >> $GITHUB_OUTPUT
-            echo "⚠️  Index file not found - will index main branch"
-          fi
-        continue-on-error: true
-      
-      - name: Index main branch (if needed)
-        if: steps.check-droog.outputs.installed == 'true' && steps.check-index.outputs.index_exists != 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          echo "📦 Indexing main branch (first time setup)..."
-          cd ${{ env.droog_path }}
-          node dist/index.js index --repo ${{ github.repository }} --branch main || {
-            echo "⚠️  Indexing failed, but continuing with review"
-          }
-        continue-on-error: true
-      
-      - name: Run Droog AI Review
-        if: steps.check-droog.outputs.installed == 'true'
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            PR_NUMBER="${{ github.event.inputs.pr_number }}"
-          fi
-          
-          echo "🚀 Reviewing PR #${PR_NUMBER}..."
-          echo "📦 Using DroogAI from: ${{ env.droog_path }}"
-          cd ${{ env.droog_path }}
-          
-          # Run review with enterprise features and auto-post comments
-          node dist/index.js review --repo "${{ github.repository }}" --pr "${PR_NUMBER}" --enterprise --post || {
-            echo "⚠️  Review completed with warnings"
-            exit 0  # Don't fail workflow on review errors
-          }
-        continue-on-error: true
-      
-      - name: DroogAI Installation Failed
-        if: steps.check-droog.outputs.installed != 'true'
-        run: |
-          echo "❌ DroogAI installation failed"
-          echo "💡 Solutions:"
-          echo "1. Ensure DroogAI is pushed to GitHub at: https://github.com/abhijeet1771/AI-reviewer"
-          echo "2. Or publish DroogAI to npm and install via npm"
-          echo "3. Or use a different installation method"
-          exit 1
-      
-      - name: Upload review report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: review-report
-          path: /tmp/droog-ai/report.json
-          retention-days: 7
-        continue-on-error: true
+    with:
+      pr_number: "${{ github.event.pull_request.number || github.event.inputs.pr_number }}"
+      post_comments: true
+      auto_fix: true
+      auto_apply: false
+    secrets:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

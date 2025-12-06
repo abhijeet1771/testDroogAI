@@ -39,3 +39,5 @@ Write-Host "   npm run test:box    - Test Box login page" -ForegroundColor White
 Write-Host "   npm run test:droog  - Test DroogAI features" -ForegroundColor White
 Write-Host "   npm test           - Run all tests" -ForegroundColor White
 
+
+

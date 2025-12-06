@@ -60,3 +60,4 @@ class BoxDashboardPage {
 
 module.exports = { BoxDashboardPage };
 
+

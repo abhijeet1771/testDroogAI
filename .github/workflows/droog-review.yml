@@ -35,7 +35,7 @@ jobs:
       - name: Run DroogAI Review
         uses: abhijeet1771/DROOGAI/.github/workflows/droog-review-reusable.yml@master
         with:
-          pr_number: "${{ github.event.pull_request.number }}"
+          pr_number: "${{ github.event.pull_request.number || github.event.inputs.pr_number }}"
           post_comments: true
           auto_fix: true
           auto_apply: false

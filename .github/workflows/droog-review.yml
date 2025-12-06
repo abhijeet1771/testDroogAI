@@ -12,7 +12,7 @@ on:
 
 jobs:
   review:
-    uses: abhijeet1771/DROOGAI/.github/workflows/droog-review-reusable.yml@main
+    uses: abhijeet1771/DROOGAI/.github/workflows/droog-review-reusable.yml@master
     permissions:
       contents: read
       pull-requests: write

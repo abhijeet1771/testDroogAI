@@ -12,34 +12,17 @@ on:
 
 jobs:
   review:
-    runs-on: ubuntu-latest
+    uses: abhijeet1771/DROOGAI/.github/workflows/droog-review-reusable.yml@b7a83e5
     permissions:
       contents: read
       pull-requests: write
       issues: write
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-        continue-on-error: true
-      
-      # Use reusable workflow instead of manual installation
-      - name: Run DroogAI Review
-        uses: abhijeet1771/DROOGAI/.github/workflows/droog-review-reusable.yml@master
-        with:
-          pr_number: "${{ github.event.pull_request.number || github.event.inputs.pr_number }}"
-          post_comments: true
-          auto_fix: true
-          auto_apply: false
-        secrets:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      pr_number: "${{ github.event.pull_request.number || github.event.inputs.pr_number }}"
+      post_comments: true
+      auto_fix: true
+      auto_apply: false
+    secrets:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
